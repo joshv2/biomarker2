@@ -1,0 +1,9 @@
+<h1>Samples for Patient x</h1>
+<ul>
+{% for sample in object_list %}
+    <li>{{ sample.date_of_sample_collection }}</li>
+	<li>{{ sample.link_text }}
+{% empty %}
+    <li>No articles yet.</li>
+{% endfor %}
+</ul>

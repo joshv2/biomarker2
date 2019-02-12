@@ -1,0 +1,91 @@
+{% extends "samples/base.html" %}
+{% load staticfiles %}
+{% with request.path|slice:"9:17" as path %}
+{% if path == 'patients' %}
+{% block homeBlock %}
+    <li>
+{% endblock %}
+{% block dataBlock %}
+    <li class="active">
+{% endblock %}
+
+{% endif %}
+{% endwith %}
+{% block headContent %}
+    <link rel="stylesheet" type="text/css" href = "{% static 'samples/style.css'%} " />
+{% endblock %}
+
+{% block content %}
+{% if group_patients %}
+<div class="container">
+<div class="row">
+<!--<div class="col-md-2">
+</div>-->
+<div class="col-md-12">
+<div class="panel panel-default">
+  <!-- Default panel contents -->
+  <div class="panel-heading">Current patients for {{user.username}}</div>
+  <div class="panel-body">
+    <p id="addbutton"><a href="{% url 'samples:create-patient' %}">
+						<button type="button" class="btn btn-success">Add Patient <span class="glyphicon glyphicon-plus"></span>
+					  </button></a>
+					  
+     </p>
+  </div>
+
+<div class="table-responsive">
+<table class="table">
+<thead>
+<tr>
+<th>Patient ID</th>
+<th>Patient First Name</th>
+<th>Patient Last Name</th>
+<th>Patient date of Birth</th>
+<th>Sex</th>
+<th>Transplant Date</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+{% for patient in group_patients %}
+<tr>	
+	<td>{{patient.id}}</td>
+	<td>{{patient.first_name}}</td>
+	<td>{{patient.last_name}}</td>
+	<td>{{patient.patient_dob}}</td>
+	<td>{{patient.patient_sex}}</td>
+	<td>{{patient.transplant_date}}</td>
+
+	<td><a href="{{patient.id}}">View Patient's Samples</a></td>
+	
+</tr>	
+{% endfor %}
+</tbody>
+</table> 
+</div>
+
+</div>
+</div>
+<!--<div class="col-md-2">
+</div>-->
+{% else %}
+    <div class="container">
+<div class="row">
+<!--<div class="col-md-2">
+</div>-->
+<div class="col-md-12">
+<div class="panel panel-default">
+  <!-- Default panel contents -->
+  <div class="panel-heading">Current patients for {{user.username}}</div>
+  <div class="panel-body">
+    <p id="addbutton"><a href="{% url 'samples:create-patient' %}">
+						<button type="button" class="btn btn-success">Add Patient <span class="glyphicon glyphicon-plus"></span>
+					  </button></a>
+					  
+     </p>
+  </div>
+  </div>
+  </div>
+{% endif %}
+
+{% endblock %} 

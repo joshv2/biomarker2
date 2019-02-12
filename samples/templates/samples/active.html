@@ -1,0 +1,13 @@
+{% if group_samples %}
+{% for sample in group_samples %}
+	
+	{{sample.id}}
+	{{sample.transaction_date}}
+	{{sample.sample_dob}}
+	{{sample.sample_Sex}}
+	{{sample.sample_status}}
+	
+{% endfor %}
+{% else %}
+    <p>No samples for this group.</p>
+{% endif %}

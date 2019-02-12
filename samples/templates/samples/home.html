@@ -1,0 +1,24 @@
+{% extends "samples/base.html" %}
+{% load staticfiles %}
+{% block homeBlock %}
+    <li class="active">
+{% endblock %}
+
+{% block headContent %}
+    <link rel="stylesheet" type="text/css" href = "{% static 'samples/style.css'%} " />
+{% endblock %}
+
+{% block bodyBlock %}
+    <body style="background-image: url('{% static 'nightsky.jpg'%}'); background-attachment: fixed; min-width: 100%; min-height: 100%;display: grid;">
+{% endblock %}
+
+{% block content %}
+    <div id="imageHeader">
+        <h1>Biomarker Consortium for Pediatric Transplantation Initiatives</h1>
+        <!--<p>Your one stop solution to issues</p>-->
+    
+    </div>
+	
+    <div id="homeRoot">
+</div>
+{% endblock %}

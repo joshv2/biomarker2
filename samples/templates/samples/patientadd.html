@@ -1,0 +1,49 @@
+{% extends "samples/base.html" %}
+{% load staticfiles %}
+{% block dataBlock %}
+	  <li class="active">
+{% endblock %}
+
+{% block headContent %}
+    <link rel="stylesheet" type="text/css" href = "{% static 'samples/style.css'%} " />
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="row">
+<!--<div class="col-md-2">
+</div>-->
+<div class="col-md-12">
+<div class="panel panel-default">
+<div class="panel-heading">Add Patient</div>
+ <div class="panel-body">
+  
+<form method="post" action="" enctype="multipart/form-data" autocomplete="off">
+    
+	{% csrf_token %}
+	{% for field in form %}
+	{% if field.label_tag == '<label for="id_deceased">Deceased:</label>' %}
+	 <div class="checkbox">
+    <label>
+      {{ field }} <b>Deceased</b>
+    </label>
+  </div>
+  {% elif field.label_tag == '<label for="id_graft_lost">Graft lost:</label>' %}
+  <div class="checkbox">
+    <label>
+      {{ field }} <b>Graft lost</b>
+    </label>
+  {% else %}
+	<div class="form-group">
+		{{ field.label_tag }} {{ field }}
+	</div>
+	{% endif %}
+	{% endfor %}
+<button type="submit" class="btn btn-default" id="endofpagebutton">Save</button>
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+    {% load bootstrap3 %}
+	{% load notifications_tags %} 
+    {% load staticfiles %}
+    <head>
+        <link rel="stylesheet" type="text/css" href = "{% static 'bootstrap/3.1.1/css/bootstrap.css'%} " />
+        {% block headContent %}{% endblock %}
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>Biomarker Consortium for Pediatric Transplantation Initiatives</title>
+		<script src="{% static 'jquery.min.js'%} "></script>
+		{% block javascript %}
+		  <script src="{% static 'notifications/notify.js' %}" type="text/javascript"></script>
+			
+			<script type="text/javascript">
+			function my_special_notification_callback(data) {
+				for (var i=0; i < data.unread_list.length; i++) {
+					msg = data.unread_list[i];
+					console.log(msg);
+				}
+			}
+			</script>
+		  <script>
+			jQuery(document).ready(function($) {
+			$(".deletelink").click(function () {
+			  var notid = this.id;
+			  var el = $(this).closest('.li');
+			  console.log(notid)
+			  $.ajax({
+				type: 'GET',
+				url: "/delete/" + notid + "/",
+				
+				
+				success: function (data) { if (data != '') {$("#" + String(notid)).closest('li').remove();} }
+			  });
+
+			});
+			});
+		  </script>
+		  {% register_notify_callbacks callbacks='fill_notification_list,fill_notification_badge,my_special_notification_callback' %}
+		{% endblock %}
+		
+	</head>
+    {% block bodyBlock%}
+    <body>
+    {% endblock %}
+        <nav class="navbar navbar-default" role="navigation">
+          <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="/">BioCoPe 4 TraIn</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+              <ul class="nav navbar-nav">
+                {% block homeBlock %}
+                  <li>
+                {% endblock %}
+                    <a href="/">Home</a>
+                  </li>
+				{% block consortiumBlock %}
+                  <li>
+                {% endblock %}
+                  <a href="/consortium">Consortium Members</a>
+                  </li>  
+                <!--{% block documentsBlock %}
+                  <li>
+                {% endblock %}
+                  <a href="/documents">Documents</a>
+                  </li>-->
+				{% block dataBlock %}
+                    <li class="dropdown">
+                  {% endblock %}
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Patients <span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li><a href="{% url 'samples:patientshome' %}">View Patients</a>
+						</li>
+						<li><a href="/samples">View Current Samples</a>
+						</li>
+						{% if user.is_authenticated and user.groups.all.0.id == 3 %}
+				
+                  <li>
+                
+                  <a href="/samples/pendingsamples/">Pending Samples</a>
+                  </li>
+				{% endif %}
+					</ul>
+					
+				
+				</li>
+				
+                
+
+              </ul>
+
+              <ul class="nav navbar-nav navbar-right">
+                {% if user.is_authenticated and user.username != "admin" %}
+                  {% block profileBlock %}
+                    <li>
+                  {% endblock %}
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Logged in as: {{ user.username }} {% notifications_unread as unread_count %}
+
+					{% if unread_count %}
+						
+						<span class="badge">{% live_notify_badge %}</span>
+						
+					{% endif %}<!--</span></a>-->
+					<span class="caret"></span></a>
+ 					
+					<ul class="dropdown-menu">
+					
+					{% for notification in notifications %}
+						{% if notification.description == 'Tested' %}
+						<li><a class="notificationinfo" href="/samples/{{notification.actor_object_id}}/results">
+						Sample {{notification.actor_object_id}} {{notification.verb}} {{notification.description}}</a>
+						{% elif notification.description == 'Submitted' and user.groups.all.0.id == 3 %}
+						<li><a class="notificationinfo" href="/samples/{{notification.actor_object_id}}/childrensedit">
+						Sample {{notification.actor_object_id}} {{notification.verb}} {{notification.description}}</a>
+						{% elif notification.description != 'Tested' or notification.description != 'Submitted' %}
+						<li><a class="notificationinfo" href="#">
+						Sample {{notification.actor_object_id}} {{notification.verb}} {{notification.description}}</a>
+						{% endif %}
+						<a class="deletelink" id="{{notification.slug}}" href="#">Dismiss</a></li>
+						{% endfor %}
+ 					</ul>
+					</li>
+					
+                  <li><a href="/logout">Logout</a></li>
+                {% elif user.is_authenticated and user.username == "admin" %}
+				{% block adminprofileBlock %}
+                    <li class="dropdown">
+                  {% endblock %}
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Logged in as: {{ user.username }}<span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li><a href="#">Go to admin site</a>
+						</li>
+					</ul>
+					</li>
+
+                  <li><a href="/logout">Logout</a></li>
+				{% else %}
+                  {% block loginBlock %}
+                    <li>
+                  {% endblock %}
+                      <a href="/accounts/login"><b>Login</b></a>
+                    </li>
+                    {% block signupBlock %}
+                    <li>
+                    {% endblock %}
+                      <a href="/user/signup">Sign Up</a>
+                    </li>
+
+                {% endif %}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        <div id="content">
+          {% block content %}{% endblock %}
+        </div>
+		
+        <div>
+		<p>Version 0.9 - Released 2019-02-12</p>
+		</div>
+        <script src="{% static 'bootstrap/3.1.1/js/bootstrap.min.js'%}"></script>
+    </body>
+</html>

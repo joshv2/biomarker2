@@ -1,0 +1,126 @@
+{% extends "samples/base.html" %}
+{% load staticfiles %}
+{% block dataBlock %}
+	  <li class="active">
+{% endblock %}
+
+{% block headContent %}
+    <link rel="stylesheet" type="text/css" href = "{% static 'samples/style.css'%} " />
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+<!--<div class="col-md-2">
+</div>-->
+<div class="page-header">
+<h1>Test Results for Sample {{ sample.id }} - Collected: {{sample.date_of_sample_collection}}</h1></div>
+<div class="row">
+<div class="col-md-12">
+<div class="table-responsive">
+<table class="table">
+<tr>
+<td class="tdcenter">Patient Last Name: {{sample.patient.last_name}}</td>
+<td class="tdcenter">Patient First Name: {{sample.patient.first_name}}</td>
+<td class="tdcenter">Patient DOB: {{sample.patient.patient_dob}}</td>
+<td class="tdcenter">Patient Sex: {{sample.patient.patient_sex}}</td>
+<td class="tdcenter">Transplant Date: {{sample.patient.transplant_date|timesince}} ago</td>
+
+</tr> 
+</table>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div class="panel panel-info">
+<div class="panel-heading">
+	<h3 class="panel-title">Creatinine (Baseline: {{sample.patient.creatinine_baseline}})</h3>
+	</div>
+  <div class="panel-body">Current Creatinine: {{sample.creatinine_current}}</div>
+</div>
+</div>
+<div class="col-md-4">
+<div class="panel panel-info">
+<div class="panel-heading">
+	<h3 class="panel-title">eGFR</h3>
+	</div>
+  <div class="panel-body">eGFR: {{sample.eGFR}}</div>
+</div>
+</div>
+<div class="col-md-4">
+<div class="panel panel-info">
+<div class="panel-heading">
+	<h3 class="panel-title">Immunosuppression</h3>
+	</div>
+  <div class="panel-body">Immunosuppression: {{sample.immunosuppression}}</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div class="panel panel-info">
+<div class="panel-heading">
+	<h3 class="panel-title">Biopsy Result</h3>
+	</div>
+  <div class="panel-body">{{sample.biopsy_result}}</div>
+  <div class="panel-footer">Reason for Biopsy: {{sample.reason_for_biopsy}}</div>
+</div>
+</div>
+<div class="col-md-4">
+
+</div>
+<div class="col-md-4">
+
+</div>
+</div>
+<h3>Biomarker levels</h3>
+<div class="row">
+<div class="col-md-3">
+<div class="panel panel-info">
+<div class="panel-heading">
+	<h3 class="panel-title">CXCL9 level (&lt;30pg/ml)</h3>
+	</div>
+  <div class="panel-body">{{sample.CXCL9_level}}</div>
+ </div>
+</div>
+<div class="col-md-3">
+<div class="panel panel-info">
+<div class="panel-heading">
+	<h3 class="panel-title">CXCL10 level (&lt;15pg/ml)</h3>
+	</div>
+  <div class="panel-body">{{sample.CXCL10_level}}</div>
+ </div>
+</div>
+<div class="col-md-3">
+<div class="panel panel-info">
+<div class="panel-heading">
+	<h3 class="panel-title">VEGF-A level (&lt;200pg/ml)</h3>
+	</div>
+  <div class="panel-body">{{sample.vegfa_level}}</div>
+ </div>
+</div>
+<div class="col-md-3">
+<div class="panel panel-info">
+<div class="panel-heading">
+	<h3 class="panel-title">CCL2 level (&lt;245pg/ml)</h3>
+	</div>
+  <div class="panel-body">{{sample.ccl2_level}}</div>
+ </div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-2">
+
+</div>
+<div class="col-md-8">
+<h1 class="text-center">Overall graft injury risk: {{sample.injury_risk}}</h1>
+</div>
+<div class="col-md-2">
+
+</div>
+</div>
+</div>
+</div>
+
+{% endblock %}
