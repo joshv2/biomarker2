@@ -29,7 +29,8 @@ def user_directory_path(instance, filename):
     groupname = instance.submitting_group.name
     return '{0}/{1}'.format(''.join(filter(str.isalnum, groupname)), filename)
     #return '{0}/{1}'.format(groupname, filename)
-    
+
+ #patient class   
 class Patient(models.Model):
     
     

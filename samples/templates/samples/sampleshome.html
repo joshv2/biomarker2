@@ -35,10 +35,12 @@
 	<a href="{% url 'samples:patientshome' %}" id="returntopatients">Return to Patients Listing</a>
 	<p id="addbutton"><a href="{% url 'samples:create-patient' %}">
 						<button type="button" class="btn btn-success">Add Patient <span class="glyphicon glyphicon-plus"></span>
-					  </button></a>
-					  <a href="{% url 'samples:add' patient.id%}">
+						</button></a>
+						{% if patient.id %}
+						<a href="{% url 'samples:add' patient.id %}">
 						<button type="button" class="btn btn-primary">Add Sample <span class="glyphicon glyphicon-plus"></span>
-					  </button></a>
+						</button></a>
+						{% endif %}
      </p>
 	 {% endif %}
   </div>
@@ -117,10 +119,12 @@
   <div class="panel-body">
     <p id="addbutton"><a href="{% url 'samples:create-patient' %}">
 						<button type="button" class="btn btn-success">Add Patient <span class="glyphicon glyphicon-plus"></span>
-					  </button></a>
-					  <a href="{% url 'samples:add' patient.id%}">
+						</button></a>
+						{% if patient.id %}
+						<a href="{% url 'samples:add' patient.id %}">
 						<button type="button" class="btn btn-primary">Add Sample <span class="glyphicon glyphicon-plus"></span>
-					  </button></a>
+						</button></a>
+						{% endif %}
      </p>
   </div>
   </div>
