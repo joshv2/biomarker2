@@ -1,5 +1,5 @@
 {% extends "samples/base.html" %}
-{% load staticfiles %}
+{% load static %}
 {% with request.path|slice:"9:17" as path %}
 {% if path == 'patients' %}
 {% block homeBlock %}

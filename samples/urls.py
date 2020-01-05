@@ -25,7 +25,7 @@ urlpatterns =[
     path('<int:sample_id>/edit/', views.SampleUpdate.as_view(), name='sample-edit'),
     path('<int:sample_id>/childrensedit/', views.ChildrensSampleUpdate.as_view(), name='csample-edit'),
     path('patients/<int:patient_id>', views.SamplesbyPatient, name='patient-samples'),
-    path('export/', views.data_export, name='export'),
+    #path('export/', views.data_export, name='export'),
     path('pendingsamples/', views.forReview, name='pending-samples'),
     path('<int:pk>/deletesample/', views.SampleDelete.as_view(), name='delete-sample'),
     ]

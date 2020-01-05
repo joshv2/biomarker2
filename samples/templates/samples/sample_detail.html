@@ -1,5 +1,5 @@
 {% extends "samples/base.html" %}
-{% load staticfiles %}
+{% load static %}
 {% block dataBlock %}
 	  <li class="active">
 {% endblock %}
@@ -20,11 +20,12 @@
 <div class="table-responsive">
 <table class="table">
 <tr>
-<td class="tdcenter">Patient Last Name: {{sample.patient.last_name}}</td>
-<td class="tdcenter">Patient First Name: {{sample.patient.first_name}}</td>
-<td class="tdcenter">Patient DOB: {{sample.patient.patient_dob}}</td>
-<td class="tdcenter">Patient Sex: {{sample.patient.patient_sex}}</td>
-<td class="tdcenter">Transplant Date: {{sample.patient.transplant_date|timesince}} ago</td>
+<td class="tdcenter">Patient Last Name: </br> {{sample.patient.last_name}}</td>
+<td class="tdcenter">Patient First Name: </br> {{sample.patient.first_name}}</td>
+<td class="tdcenter">Patient DOB: </br>{{sample.patient.patient_dob}}</td>
+<td class="tdcenter">Patient Sex:</br> {{sample.patient.patient_sex}}</td>
+<td class="tdcenter">Age at Transplant:</br> {{sample.patient.patient_dob|timesince:sample.patient.transplant_date}}</td>
+<td class="tdcenter">Post-transplant year:</br> {{sample.patient.transplant_date|timesince}} ago</td>
 
 </tr> 
 </table>

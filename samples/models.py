@@ -2,7 +2,6 @@ import datetime
 from django.db import models
 from django import forms
 from django.forms import ModelForm
-from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -57,6 +56,14 @@ class Patient(models.Model):
     dsa = models.CharField(choices=dsa_choices, max_length = 8, default = negative)
     ns_antibody = models.CharField(max_length=100)
     alloantibody_details = models.CharField(max_length=100, default='')
+
+    #Other Risk Factors
+
+    DSA_RF = models.BooleanField("DSA", default=False)
+    Previous_Rejection = models.BooleanField("Previous Rejection", default=False)
+    Second_Transplant = models.BooleanField("Second Transplant", default=False)
+    CNITac_Sensitivity = models.BooleanField("CNI/Tacrolimus sensitivity", default=False)
+
     misc_info_1 = models.TextField(default='')
     misc_info_2 = models.TextField(default='')
     graft_lost = models.BooleanField(default=0)
@@ -70,7 +77,7 @@ class Patient(models.Model):
         ptdob = self.patient_dob
         return self.last_name + ", " + self.first_name + ": " + ptdob.strftime('%Y-%m-%d')
     
-    def get_group_Patients(groupid):
+    def get_group_Patients(self, groupid):
         group_Patients = Patient.objects.filter(submitting_group = groupid)
         return group_Patients
     
@@ -93,6 +100,12 @@ class PatientForm(ModelForm):
     alloantibody_details = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'style':'width:50%'}))
     misc_info_1 = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}))
     misc_info_2 = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}))
+
+    
+    DSA_RF = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={}))
+    Previous_Rejection = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={}))
+    Second_Transplant = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={}))
+    CNITac_Sensitivity = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={}))
     graft_lost = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={})) 
     deceased = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={}))
     consent = forms.FileField()
@@ -100,7 +113,9 @@ class PatientForm(ModelForm):
     class Meta:
         model = Patient
         fields = ('first_name', 'last_name', 'patient_dob', 'patient_sex', \
-                'transplant_date', 'creatinine_baseline', 'immuno_used', 'drug_name', 'dsa', 'ns_antibody', 'alloantibody_details', 'misc_info_1', 'misc_info_2', 'graft_lost', 'deceased', 'consent')
+                'transplant_date', 'creatinine_baseline', 'immuno_used', 'drug_name', 'dsa', 'ns_antibody', \
+                'DSA_RF', 'Previous_Rejection', 'Second_Transplant', 'CNITac_Sensitivity', \
+                'alloantibody_details', 'misc_info_1', 'misc_info_2', 'graft_lost', 'deceased', 'consent')
     
     def clean(self, **kwargs):
         cleaned_data = super().clean()
@@ -123,13 +138,23 @@ class sample(models.Model):
     creatinine_current = models.FloatField()
     eGFR = models.FloatField()
     immunosuppression = models.FloatField()
-    reason_for_biopsy = models.TextField()
+
+    ACUTEREJECTION = 'Acute Rejection'
+    BORDERLINE = 'Borderline'
+    CHRONICREJECTION = 'Chronic Rejection'
+    C4D = 'C4d'
+
+    reason_choices = ((ACUTEREJECTION, 'Acute Rejection'), (BORDERLINE, 'Borderline'), \
+                        (CHRONICREJECTION, 'Chronic Rejection'), (C4D, 'C4d'))
+    reason_for_biopsy =  models.CharField(choices=reason_choices, max_length=17)
     biopsy_result = models.TextField()
     CXCL9_level = models.FloatField(default=0)
     CXCL10_level = models.FloatField(default=0)
     vegfa_level = models.FloatField(default=0)
     ccl2_level = models.FloatField(default=0)
     
+    
+
     DRAFT = 'Draft'
     SUBMITTED = 'Submitted'
     RECEIVED = 'Received'
@@ -182,7 +207,7 @@ class SampleForm(ModelForm):
     
     date_of_sample_collection = forms.DateField(widget=forms.DateInput(attrs={'class':'form-control', 'style':'width:25%'}))
     creatinine_current = forms.FloatField(widget=forms.NumberInput(attrs={'class':'form-control', 'style':'width:25%'}))
-    reason_for_biopsy = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}),required=False)
+    reason_for_biopsy = forms.ChoiceField(choices=sample.reason_choices, widget=forms.Select(attrs={'class':'form-control', 'style':'width:25%'}))
     biopsy_result = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}),required=False)
     eGFR = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'style':'width:25%'}),label='eGFR')
     sample_status = forms.ChoiceField(choices=sample.status_choices_university, widget=forms.Select(attrs={'class':'form-control', 'style':'width:25%'}))

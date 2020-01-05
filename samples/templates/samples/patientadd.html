@@ -1,5 +1,5 @@
 {% extends "samples/base.html" %}
-{% load staticfiles %}
+{% load static %}
 {% block dataBlock %}
 	  <li class="active">
 {% endblock %}
@@ -33,6 +33,36 @@
     <label>
       {{ field }} <b>Graft lost</b>
     </label>
+  {% elif field.label_tag == '<label for="id_DSA_RF">Dsa rf:</label>' %}
+    <h4>Other Risk Factors:</h4>
+  <div class="form-group">
+    <div class="checkbox">
+      <label>
+        {{ field }} <b>DSA</b>
+      </label>
+    </div>
+  
+  
+  {% elif field.label_tag == '<label for="id_Previous_Rejection">Previous rejection:</label>' %}
+  <div class="checkbox">
+    <label>
+      {{ field }} <b>Previous Rejection</b>
+    </label>
+    </div>
+  {% elif field.label_tag == '<label for="id_Second_Transplant">Second transplant:</label>' %}
+  <div class="checkbox">
+    <label>
+      {{ field }} <b>Second Transplant</b>
+    </label>
+    </div>
+  {% elif field.label_tag == '<label for="id_CNITac_Sensitivity">Cnitac sensitivity:</label>' %}
+
+  <div class="checkbox">
+    <label>
+      {{ field }} <b>CNI/Tacrolimus sensitivity</b>
+    </label>
+  </div>
+  </div>
   {% else %}
 	<div class="form-group">
 		{{ field.label_tag }} {{ field }}

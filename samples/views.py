@@ -2,7 +2,7 @@ import datetime
 from datetime import timedelta
 from django.http import HttpResponse, Http404
 from django.template import Context, loader
-from django.shortcuts import render, render_to_response, HttpResponseRedirect
+from django.shortcuts import render, HttpResponseRedirect
 from django.http import JsonResponse
 from django.template import RequestContext
 from django.contrib.auth import authenticate, login
@@ -16,7 +16,7 @@ from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.urls import reverse, reverse_lazy
-from djqscsv import render_to_csv_response
+#from djqscsv import render_to_csv_response
 from django.db.models.signals import post_save
 from notifications.signals import notify
 from django.contrib.auth.models import Group
@@ -75,11 +75,11 @@ def index(request): #entryway to samples
     return render(request, 'samples/sampleshome.html', context=context)
 
     
-@login_required(login_url='/accounts/login/') 
+'''@login_required(login_url='/accounts/login/') 
 def data_export(request):
     user_group = request.user.groups.all()[0].id
     qs = sample.objects.filter(submitting_group = user_group)
-    return render_to_csv_response(qs)
+    return render_to_csv_response(qs)'''
     
 @login_required(login_url='/accounts/login/')  
 def patients(request): 
