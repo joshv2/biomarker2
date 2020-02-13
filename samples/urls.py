@@ -21,6 +21,8 @@ urlpatterns =[
     #path('active/', views.active, name='active'),
     path('<int:patient_id>/add/', views.addsample, name='add'),
     path('addpatient/', views.PatientCreate.as_view(), name='create-patient'),
+    path('<int:patient_id>/addbiopsy/', views.addbiopsy, name='create-biopsy'),
+    
     path('patients/', views.patients, name='patientshome'),
     path('<int:sample_id>/edit/', views.SampleUpdate.as_view(), name='sample-edit'),
     path('<int:sample_id>/childrensedit/', views.ChildrensSampleUpdate.as_view(), name='csample-edit'),

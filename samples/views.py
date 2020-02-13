@@ -1,4 +1,5 @@
 import datetime
+import json
 from datetime import timedelta
 from django.http import HttpResponse, Http404
 from django.template import Context, loader
@@ -9,8 +10,8 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect
-from .models import SampleForm, PatientForm, ChildrensSampleForm
-from .models import sample, Patient
+from .models import SampleForm, PatientForm, ChildrensSampleForm, BiopsyForm
+from .models import sample, Patient, biopsy
 from django.forms import ModelForm
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.views.generic.list import ListView
@@ -150,7 +151,36 @@ def addsample(request, **kwargs):
         user=request.user
         form = SampleForm #(user=user)
     return render(request, 'samples/sampleadd.html', {'form': form, 'notifications' : user.notifications.unread(), 'patient' : patient}) #, 'content' : e
+
+@login_required(login_url='/accounts/login/')   
+def addbiopsy(request, **kwargs):
     
+    if request.method == 'POST':
+        form = BiopsyForm(patient_id=kwargs.get('patient_id'), data=request.POST)
+        patientid=kwargs.get('patient_id')
+        user=request.user
+        patient = Patient.objects.get(pk=patientid)
+        if form.is_valid():
+            newsample = form.save(commit=False)
+            
+            #newsample.eGFR = 0
+            #newsample.immunosuppression = 0
+            #newsample.biopsy_result = ''
+            #newsample.protein4 = 0
+            newsample.patient_id = kwargs.get('patient_id')
+            newsample.submitting_group_id = request.user.groups.all()[0].id
+            newsample.submitting_user_id = request.user.id
+            newsample.save()
+            return HttpResponseRedirect('/samples/patients/' + str(newsample.patient_id))
+    else:
+        #e = "New Form"
+        patientid = kwargs.get('patient_id')
+        patient = Patient.objects.get(pk=patientid)
+        user=request.user
+        form = BiopsyForm #(user=user)
+    return render(request, 'samples/sampleadd.html', {'form': form, 'notifications' : user.notifications.unread(), 'patient' : patient}) #, 'content' : e
+    
+
 '''@login_required(login_url='/login/') 
 def active(request):
     user_group = request.user.groups.all()[0].id
@@ -168,7 +198,10 @@ def SamplesbyPatient(request, patient_id, **kwargs):
     patient = Patient.objects.get(pk=patient_id)
     if patient.submitting_group_id == user_group:
         group_samples = sample.get_patient_samples(patient_id)
+        group_biopsies = biopsy.get_patient_biopsies(patient_id)
+        print(group_biopsies)
         for biosample in group_samples:
+            print(biosample)
             if "Tested" == biosample.sample_status:
                 biosample.link =  str(biosample.id) + '/results'
                 biosample.link_text = "Results"
@@ -178,7 +211,9 @@ def SamplesbyPatient(request, patient_id, **kwargs):
             elif "Draft" == biosample.sample_status:
                 biosample.link = str(biosample.id) + '/edit'
                 biosample.link_text = "Edit"
-        context = {'user' : user, 'group_samples': group_samples, 'patient': patient, 'notifications' : user.notifications.unread()}
+        #for biopsy in group_biopsies:
+
+        context = {'user' : user, 'group_id' : user_group, 'group_samples': group_samples, 'patient': patient, 'notifications' : user.notifications.unread()}
         
     
     else:
@@ -243,7 +278,11 @@ class PatientCreate(LoginRequiredMixin, CreateView):
         form.instance.submitting_group = self.request.user.groups.all()[0]
         form.instance.submitting_groupname = self.request.user.groups.all()[0].name
         #form.instance.nwewid = self.kwargs['pk']
-        return super(PatientCreate, self).form_valid(form)
+        print(form.errors)
+        #form.instance.immuno_used = json.dumps(form.cleaned_data['immuno_used'])
+        #print(form.instance.immuno_used)
+        #form.save()
+        return super(PatientCreate, self).form_valid(form) #PatientCreate, self
         
     def get_success_url(self):
         view_name = '/samples/patients/'

@@ -36,13 +36,33 @@
 	<p id="addbutton"><a href="{% url 'samples:create-patient' %}">
 						<button type="button" class="btn btn-success">Add Patient <span class="glyphicon glyphicon-plus"></span>
 					  </button></a>
+					  <a href="{% url 'samples:create-biopsy' patient.id%}">
+						<button type="button" class="btn btn-success">Add Biopsy <span class="glyphicon glyphicon-plus"></span>
+					  </button></a>
 					  <a href="{% url 'samples:add' patient.id%}">
 						<button type="button" class="btn btn-primary">Add Sample <span class="glyphicon glyphicon-plus"></span>
 					  </button></a>
      </p>
 	 {% endif %}
   </div>
-{% if group_id != 3 %}
+{% if group_id > 0 %}
+<div class="row">
+	<div class="col-md-12">
+	<div class="table-responsive">
+	<table class="table">
+	<tr>
+	<td class="tdcenter">Patient Last Name: </br> {{patient.last_name}}</td>
+	<td class="tdcenter">Patient First Name: </br> {{patient.first_name}}</td>
+	<td class="tdcenter">Patient DOB: </br>{{patient.patient_dob}}</td>
+	<td class="tdcenter">Patient Sex:</br> {{patient.patient_sex}}</td>
+	<td class="tdcenter">Age at Transplant:</br> {{patient.patient_dob|timesince:patient.transplant_date}}</td>
+	<td class="tdcenter">Post-transplant year:</br> {{patient.transplant_date|timesince}} ago</td>
+	
+	</tr> 
+	</table>
+	</div>
+	</div>
+	</div>
 <div class="table-responsive">
 <table class="table">
 <thead>
@@ -70,7 +90,7 @@
 </table> 
 </div>
 {% endif %}
-{% if group_id == 3 %}
+<!--{% if group_id == 3 %}
 <div class="table-responsive">
 <table class="table">
 <thead>
@@ -100,7 +120,7 @@
 </tbody>
 </table> 
 </div>
-{% endif %}
+{% endif %}-->
 </div>
 </div>
 <!--<div class="col-md-2">

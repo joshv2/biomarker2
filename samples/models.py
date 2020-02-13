@@ -1,4 +1,5 @@
 import datetime
+import os
 from django.db import models
 from django import forms
 from django.forms import ModelForm
@@ -11,6 +12,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from notifications.signals import notify
 from django.db.models import Q
+from multiselectfield import MultiSelectField
 
 from django.utils import timezone
 
@@ -47,8 +49,11 @@ class Patient(models.Model):
     no_immuno = 'None'
     TORi = 'TORi'
     CNI = 'CNI'
-    immuno_choices = ((TORi, 'TORi'), (CNI, 'CNI'), (no_immuno, 'None'))
-    immuno_used = models.CharField(choices=immuno_choices, max_length = 4, default = no_immuno)
+    MMF = 'MMF'
+    Steroids = 'Steroids'
+    Immuran = 'Immuran'
+    immuno_choices = ((TORi, 'TORi'), (CNI, 'CNI'), (MMF, 'MMF'), (Steroids, 'Steroids'), (Immuran, 'Immuran'), (no_immuno, 'None'))
+    immuno_used = models.CharField(choices=immuno_choices, max_length = 8, default = no_immuno)
     drug_name = models.CharField(max_length=100, default ='')
     positive = 'Positive'
     negative = 'Negative'
@@ -64,9 +69,10 @@ class Patient(models.Model):
     Second_Transplant = models.BooleanField("Second Transplant", default=False)
     CNITac_Sensitivity = models.BooleanField("CNI/Tacrolimus sensitivity", default=False)
 
-    misc_info_1 = models.TextField(default='')
+    primary_kidney_disease = models.TextField(default='')
     misc_info_2 = models.TextField(default='')
     graft_lost = models.BooleanField(default=0)
+    graft_lost_date = models.DateField(null=True, blank=True)
     deceased = models.BooleanField("Deceased?")
     
     consent = models.FileField(upload_to=user_directory_path, default='')
@@ -77,7 +83,7 @@ class Patient(models.Model):
         ptdob = self.patient_dob
         return self.last_name + ", " + self.first_name + ": " + ptdob.strftime('%Y-%m-%d')
     
-    def get_group_Patients(self, groupid):
+    def get_group_Patients(groupid):
         group_Patients = Patient.objects.filter(submitting_group = groupid)
         return group_Patients
     
@@ -93,13 +99,13 @@ class PatientForm(ModelForm):
     patient_sex = forms.ChoiceField(choices=Patient.sex_choices, widget=forms.Select(attrs={'class':'form-control', 'style':'width:25%'}))
     transplant_date = forms.DateField(widget=forms.DateInput(attrs={'class':'form-control', 'style':'width:25%'}))
     creatinine_baseline = forms.FloatField(widget=forms.NumberInput(attrs={'class':'form-control', 'style':'width:25%'}))
-    immuno_used = forms.ChoiceField(choices=Patient.immuno_choices, widget=forms.RadioSelect(attrs={'class':'list-inline'}), label='Maintenance Immunosuppression')
+    immuno_used = forms.ChoiceField(required=False, choices=Patient.immuno_choices, widget=forms.RadioSelect(attrs={'class':'list-inline'}), label='Maintenance Immunosuppression')
     drug_name = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}),label='Immunosuppressant Drugs Used (please separate with commas)')
     dsa = forms.ChoiceField(choices=Patient.dsa_choices, widget=forms.RadioSelect(attrs={'class':'list-inline'}), label='DSA status')
     ns_antibody = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'style':'width:50%'}),label='Other Non-specific antibodies (please separate with commas)')
     alloantibody_details = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'style':'width:50%'}))
-    misc_info_1 = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}))
-    misc_info_2 = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}))
+    primary_kidney_disease = forms.CharField(required=False, widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}))
+    misc_info_2 = forms.CharField(required=False, widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}))
 
     
     DSA_RF = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={}))
@@ -107,6 +113,7 @@ class PatientForm(ModelForm):
     Second_Transplant = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={}))
     CNITac_Sensitivity = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={}))
     graft_lost = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={})) 
+    graft_lost_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'class':'form-control', 'style':'width:25%'}))
     deceased = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={}))
     consent = forms.FileField()
     
@@ -115,13 +122,15 @@ class PatientForm(ModelForm):
         fields = ('first_name', 'last_name', 'patient_dob', 'patient_sex', \
                 'transplant_date', 'creatinine_baseline', 'immuno_used', 'drug_name', 'dsa', 'ns_antibody', \
                 'DSA_RF', 'Previous_Rejection', 'Second_Transplant', 'CNITac_Sensitivity', \
-                'alloantibody_details', 'misc_info_1', 'misc_info_2', 'graft_lost', 'deceased', 'consent')
+                'alloantibody_details', 'primary_kidney_disease', 'misc_info_2', 'graft_lost', 'graft_lost_date', 'deceased', 'consent')
     
     def clean(self, **kwargs):
         cleaned_data = super().clean()
         pdob = cleaned_data.get("patient_dob")
+        #BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         
-        #print(self.patient_id2)
+        print(cleaned_data.get("immuno_used"))
+        #print(os.path.join(BASE_DIR))
         #sample_patient = Patient.objects.get(id=self.patient_id2)
         if pdob < datetime.date(1920, 1, 1):
             raise forms.ValidationError("Patient is too old, choose a date after 1/1/1920")
@@ -130,24 +139,46 @@ class PatientForm(ModelForm):
         if tdate < pdob:
             raise forms.ValidationError("Transplant can not occur prior to patient's date of birth")
             
-        
-class sample(models.Model):
-    #sample_dob = models.DateField("Sample Date of Birth") 
-    patient = models.ForeignKey(Patient, on_delete=models.PROTECT)
-    date_of_sample_collection = models.DateField()
-    creatinine_current = models.FloatField()
-    eGFR = models.FloatField()
-    immunosuppression = models.FloatField()
 
+class biopsy(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.PROTECT)
+    date_of_biopsy = models.DateField()
+    
+    NORMAL = 'Normal'
     ACUTEREJECTION = 'Acute Rejection'
     BORDERLINE = 'Borderline'
     CHRONICREJECTION = 'Chronic Rejection'
     C4D = 'C4d'
 
-    reason_choices = ((ACUTEREJECTION, 'Acute Rejection'), (BORDERLINE, 'Borderline'), \
+    result_choices = ((NORMAL, 'Normal'), (ACUTEREJECTION, 'Acute Rejection'), (BORDERLINE, 'Borderline'), \
                         (CHRONICREJECTION, 'Chronic Rejection'), (C4D, 'C4d'))
-    reason_for_biopsy =  models.CharField(choices=reason_choices, max_length=17)
-    biopsy_result = models.TextField()
+    result_for_biopsy = models.CharField(choices=result_choices, max_length=17)
+    biopsy_notation = models.TextField()
+    submitting_group = models.ForeignKey(Group, on_delete=DefaultGroup.get_default)
+    
+    submitting_user = models.ForeignKey(User, on_delete=DefaultGroup.get_default)
+    
+    def get_patient_biopsies(patientid):
+        patient_biopsies = biopsy.objects.filter(patient = patientid)
+        return patient_biopsies
+
+    #reason_for_biopsy = forms.ChoiceField(choices=sample.reason_choices, widget=forms.Select(attrs={'class':'form-control', 'style':'width:25%'}))
+
+class sample(models.Model):
+    #sample_dob = models.DateField("Sample Date of Birth") 
+    patient = models.ForeignKey(Patient, on_delete=models.PROTECT)
+    date_of_sample_collection = models.DateField()
+    creatinine_baseline = models.FloatField(null=True)
+    creatinine_current = models.FloatField(null=True)
+    eGFR = models.FloatField(null=True)
+    immunosuppression = models.FloatField(null=True)
+
+
+    ADDITIONAL_RISK_FACTORS = (('DSA', 'DSA'), ('Previous_Rejection', 'Previous Rejection'), \
+                                ('Second_Transplant', 'Second Transplant'))
+
+    adtl_risk_factors = MultiSelectField(choices=ADDITIONAL_RISK_FACTORS, null=True)
+    
     CXCL9_level = models.FloatField(default=0)
     CXCL10_level = models.FloatField(default=0)
     vegfa_level = models.FloatField(default=0)
@@ -207,7 +238,7 @@ class SampleForm(ModelForm):
     
     date_of_sample_collection = forms.DateField(widget=forms.DateInput(attrs={'class':'form-control', 'style':'width:25%'}))
     creatinine_current = forms.FloatField(widget=forms.NumberInput(attrs={'class':'form-control', 'style':'width:25%'}))
-    reason_for_biopsy = forms.ChoiceField(choices=sample.reason_choices, widget=forms.Select(attrs={'class':'form-control', 'style':'width:25%'}))
+    
     biopsy_result = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}),required=False)
     eGFR = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'style':'width:25%'}),label='eGFR')
     sample_status = forms.ChoiceField(choices=sample.status_choices_university, widget=forms.Select(attrs={'class':'form-control', 'style':'width:25%'}))
@@ -215,7 +246,7 @@ class SampleForm(ModelForm):
     class Meta:
         model = sample
         fields = ('date_of_sample_collection', 'creatinine_current', \
-                    'reason_for_biopsy', 'biopsy_result', 'eGFR', 'sample_status')
+                    'adtl_risk_factors', 'biopsy_result', 'eGFR', 'sample_status') #'reason_for_biopsy',
         #widgets = {'sample_dob': forms.TextInput(attrs={'class':'form-field'}),} # 
     
     def __init__(self, *args, **kwargs):
@@ -247,7 +278,32 @@ class SampleForm(ModelForm):
         sample.save()
         return sample'''
 
+class BiopsyForm(ModelForm):
+    date_of_biopsy = forms.DateField(widget=forms.DateInput(attrs={'class':'form-control', 'style':'width:25%'}))
+    result_for_biopsy = forms.ChoiceField(choices=biopsy.result_choices, widget=forms.RadioSelect(attrs={'class':'list-inline'}), label='Biopsy Result')
+    biopsy_notation = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}), required=False)
 
+    def __init__(self, *args, **kwargs):
+        self.patient_id2 = kwargs.pop("patient_id", None)
+        #print(self.patient_id2)
+        super(BiopsyForm, self).__init__(*args, **kwargs)
+    
+    class Meta:
+        model = biopsy
+        fields = ('date_of_biopsy', 'result_for_biopsy', 'biopsy_notation')
+
+    def clean(self, **kwargs):
+        cleaned_data = super().clean()
+        #tdate = cleaned_data.get("transplant_date")
+        
+        #print(self.patient_id2)
+        sample_patient = Patient.objects.get(id=self.patient_id2)
+        tdate = sample_patient.transplant_date
+
+        bdate = cleaned_data.get("date_of_biopsy")
+        if bdate < tdate:
+            raise forms.ValidationError("Biopsy can not occur prior to patient's date of birth")
+            
 class ChildrensSampleForm(ModelForm):
     #sample_dob = forms.DateField(widget=forms.DateInput(attrs={'class':'form-control', 'id':'disabledInput'}))
     date_of_sample_collection = forms.DateField(widget=forms.DateInput(attrs={'class':'form-control', 'style':'width:25%'}), disabled=True)
