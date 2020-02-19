@@ -106,6 +106,7 @@ def forReview(request):
     user_group = request.user.groups.all()[0].id
     if 3 == user_group:
         pending_samples = sample.get_childrens_samples()
+        print(pending_samples)
         for biosample in pending_samples:
             biosample.university = biosample.submitting_group.name
             if "Tested" == biosample.sample_status:
@@ -199,7 +200,35 @@ def SamplesbyPatient(request, patient_id, **kwargs):
     if patient.submitting_group_id == user_group:
         group_samples = sample.get_patient_samples(patient_id)
         group_biopsies = biopsy.get_patient_biopsies(patient_id)
-        print(group_biopsies)
+        allsamples = []
+        for biosample in group_samples:
+            singlessample = ['Sample', biosample.date_of_sample_collection,\
+                            biosample.id, biosample.creatinine_current, \
+                            biosample.eGFR, biosample.CXCL10_level, \
+                            biosample.CXCL9_level, biosample.vegfa_level,\
+                            biosample.ccl2_level, biosample.sample_status, biosample.injury_risk]
+            allsamples.append(singlessample)
+        for ptbiopsy in group_biopsies:
+            singlebiopsy = ['Biopsy', ptbiopsy.date_of_biopsy,\
+                            ptbiopsy.id, '', '', '', '', '', '', '', \
+                            ptbiopsy.result_for_biopsy,'', '']
+            allsamples.append(singlebiopsy)
+        print(allsamples)
+        allsamples2 = sorted(allsamples, key = lambda x: x[1])
+        print(allsamples2)
+        for listedsample in allsamples2:
+            if "Tested" == listedsample[10]:
+                listedsample.append(str(listedsample[2]) + '/results')
+                listedsample.append("Results")
+            elif listedsample[10] in ("Submitted", "Insufficient"):
+                listedsample.append('')
+                listedsample.append("")
+            elif "Draft" == listedsample[10]:
+                listedsample.append(str(listedsample[2]) + '/edit')
+                listedsample.append("Edit")
+
+
+        '''print(group_biopsies)
         for biosample in group_samples:
             print(biosample)
             if "Tested" == biosample.sample_status:
@@ -211,9 +240,9 @@ def SamplesbyPatient(request, patient_id, **kwargs):
             elif "Draft" == biosample.sample_status:
                 biosample.link = str(biosample.id) + '/edit'
                 biosample.link_text = "Edit"
-        #for biopsy in group_biopsies:
+        #for biopsy in group_biopsies:'''
 
-        context = {'user' : user, 'group_id' : user_group, 'group_samples': group_samples, 'patient': patient, 'notifications' : user.notifications.unread()}
+        context = {'user' : user, 'group_id' : user_group, 'group_samples': allsamples2, 'patient': patient, 'notifications' : user.notifications.unread()}
         
     
     else:

@@ -24,28 +24,28 @@
 <div class="panel panel-default">
   <!-- Default panel contents -->
   {% if 'patients' in request.path %}
-  <div class="panel-heading">Current samples for {{ patient }}</div>
+  <div class="panel-heading">Patient: {{ patient }}</div>
   {% elif 'pendingsamples' in request.path %}
   <div class="panel-heading">Samples ready for resulting</div>
   {% else %}
   <div class="panel-heading">Current samples for {{user.username}}</div>
   {% endif %}
   <div class="panel-body">
-    {% if 'pendingsamples' not in request.path %}
+{% if 'pendingsamples' not in request.path %}
 	<a href="{% url 'samples:patientshome' %}" id="returntopatients">Return to Patients Listing</a>
 	<p id="addbutton"><a href="{% url 'samples:create-patient' %}">
 						<button type="button" class="btn btn-success">Add Patient <span class="glyphicon glyphicon-plus"></span>
 					  </button></a>
 					  <a href="{% url 'samples:create-biopsy' patient.id%}">
-						<button type="button" class="btn btn-success">Add Biopsy <span class="glyphicon glyphicon-plus"></span>
+						<button type="button" id="biopsybutton">Add Biopsy <span class="glyphicon glyphicon-plus"></span>
 					  </button></a>
 					  <a href="{% url 'samples:add' patient.id%}">
-						<button type="button" class="btn btn-primary">Add Sample <span class="glyphicon glyphicon-plus"></span>
+						<button type="button" id="samplebutton">Add Sample <span class="glyphicon glyphicon-plus"></span>
 					  </button></a>
      </p>
-	 {% endif %}
+
   </div>
-{% if group_id > 0 %}
+
 <div class="row">
 	<div class="col-md-12">
 	<div class="table-responsive">
@@ -67,30 +67,41 @@
 <table class="table">
 <thead>
 <tr>
-<th>Sample ID</th>
-<th>Sample DOB</th>
-<th>Collection Date</th>
-<th>Sex</th>
+<th>Sample/Biopsy ID</th>
+<th>Sample/Biopsy Collection Date</th>
+<th>Creatinine Current</th>
+<th>eGFR</th>
+<th>CXCL10</th>
+<th>CXCL9</th>
+<th>VEGFA</th>
+<th>CCL2</th>
 <th>Status</th>
+<th>Result/Injury Risk</th>
+<th></th>
 </tr>
 </thead>
 <tbody>
 {% for sample in group_samples %}
 <tr>	
-	<td>{{sample.id}}</td>
-	<td>{{sample.patient.patient_dob}}</td>
-	<td>{{sample.date_of_sample_collection}}</td>
+	<td>{{sample.0}} {{sample.2}}</td>
+	<td align="right">{{sample.1}}</td>
+	<td align="right">{{sample.3}}</td><!--Creatinine Current-->
+	<td align="right">{{sample.4}}</td><!--eGFR-->
+	<td align="right">{{sample.5}}</td><!--CXCL10-->
+	<td align="right">{{sample.6}}</td><!--CXCL9-->
+	<td align="right">{{sample.7}}</td><!--VEGFA-->
+	<td align="right">{{sample.8}}</td><!--eGFR-->
 	
-	<td>{{sample.patient.patient_sex}}</td>
-	<td>{{sample.sample_status}}</td>
-	<td><a href="/samples/{{sample.link}}">{{sample.link_text}}</a></td>
+	<td>{{sample.9}}</td><!--status-->
+	<td align="right">{{sample.10}}</td><!--biopsy result-->
+	<td><a href="/samples/{{sample.11}}">{{sample.12}}</a></td>
 </tr>	
 {% endfor %}
 </tbody>
 </table> 
 </div>
 {% endif %}
-<!--{% if group_id == 3 %}
+{% if 'pendingsamples' in request.path %}
 <div class="table-responsive">
 <table class="table">
 <thead>
@@ -105,45 +116,25 @@
 </tr>
 </thead>
 <tbody>
-{% for sample in group_samples %}
-<tr>	
-	<td>{{sample.id}}</td>
-	<td>{{sample.university}}</td>
-	
-	<td>{{sample.patient.patient_dob}}</td>
-	<td>{{sample.date_of_sample_collection}}</td>
-	<td>{{sample.patient.patient_sex}}</td>
-	<td>{{sample.sample_status}}</td>
-	<td><a href="/samples/{{sample.link}}">{{sample.link_text}}</a></td>
-</tr>
-{% endfor %}
+	{% for sample in group_samples %}
+	<tr>	
+		<td>{{sample.id}}</td>
+		<td>{{sample.university}}</td>
+		
+		<td>{{sample.patient.patient_dob}}</td>
+		<td>{{sample.date_of_sample_collection}}</td>
+		<td>{{sample.patient.patient_sex}}</td>
+		<td>{{sample.sample_status}}</td>
+		<td><a href="/samples/{{sample.link}}">{{sample.link_text}}</a></td>
+	</tr>
+	{% endfor %}
 </tbody>
 </table> 
 </div>
-{% endif %}-->
-</div>
-</div>
-<!--<div class="col-md-2">
-</div>-->
-{% else %}
-    <div class="container">
-<div class="row">
-<!--<div class="col-md-2">
-</div>-->
-<div class="col-md-12">
-<div class="panel panel-default">
-  <!-- Default panel contents -->
-  <div class="panel-heading">Current samples for {{ patient }}</div>
-  <div class="panel-body">
-    <p id="addbutton"><a href="{% url 'samples:create-patient' %}">
-						<button type="button" class="btn btn-success">Add Patient <span class="glyphicon glyphicon-plus"></span>
-					  </button></a>
-					  <a href="{% url 'samples:add' patient.id%}">
-						<button type="button" class="btn btn-primary">Add Sample <span class="glyphicon glyphicon-plus"></span>
-					  </button></a>
-     </p>
-  </div>
-  </div>
-  </div>
 {% endif %}
+</div>
+</div>
+{% endif %}
+
+
 {% endblock %} 

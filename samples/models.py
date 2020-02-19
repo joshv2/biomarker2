@@ -81,7 +81,7 @@ class Patient(models.Model):
     
     def __str__(self):
         ptdob = self.patient_dob
-        return self.last_name + ", " + self.first_name + ": " + ptdob.strftime('%Y-%m-%d')
+        return self.last_name + ", " + self.first_name # + ": " + ptdob.strftime('%Y-%m-%d')
     
     def get_group_Patients(groupid):
         group_Patients = Patient.objects.filter(submitting_group = groupid)
@@ -172,12 +172,13 @@ class sample(models.Model):
     creatinine_current = models.FloatField(null=True)
     eGFR = models.FloatField(null=True)
     immunosuppression = models.FloatField(null=True)
+    BkV = models.BooleanField("BkV", default=False)
+    EBV = models.BooleanField("EBV", default=False)
 
+    #ADDITIONAL_RISK_FACTORS = (('DSA', 'DSA'), ('Previous_Rejection', 'Previous Rejection'), \
+    #                            ('Second_Transplant', 'Second Transplant'))
 
-    ADDITIONAL_RISK_FACTORS = (('DSA', 'DSA'), ('Previous_Rejection', 'Previous Rejection'), \
-                                ('Second_Transplant', 'Second Transplant'))
-
-    adtl_risk_factors = MultiSelectField(choices=ADDITIONAL_RISK_FACTORS, null=True)
+    #adtl_risk_factors = MultiSelectField(choices=ADDITIONAL_RISK_FACTORS, null=True)
     
     CXCL9_level = models.FloatField(default=0)
     CXCL10_level = models.FloatField(default=0)
@@ -238,15 +239,17 @@ class SampleForm(ModelForm):
     
     date_of_sample_collection = forms.DateField(widget=forms.DateInput(attrs={'class':'form-control', 'style':'width:25%'}))
     creatinine_current = forms.FloatField(widget=forms.NumberInput(attrs={'class':'form-control', 'style':'width:25%'}))
-    
-    biopsy_result = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}),required=False)
+    BkV = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={}))
+    EBV = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={}))
+
+    #biopsy_result = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'style':'width:50%'}),required=False)
     eGFR = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'style':'width:25%'}),label='eGFR')
     sample_status = forms.ChoiceField(choices=sample.status_choices_university, widget=forms.Select(attrs={'class':'form-control', 'style':'width:25%'}))
     
     class Meta:
         model = sample
         fields = ('date_of_sample_collection', 'creatinine_current', \
-                    'adtl_risk_factors', 'biopsy_result', 'eGFR', 'sample_status') #'reason_for_biopsy',
+                     'eGFR', 'BkV', 'EBV', 'sample_status') #'reason_for_biopsy',
         #widgets = {'sample_dob': forms.TextInput(attrs={'class':'form-field'}),} # 
     
     def __init__(self, *args, **kwargs):
